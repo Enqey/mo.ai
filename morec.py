@@ -12,108 +12,78 @@ from PIL import Image
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 
-
+# Load image
 img = Image.open('C:/Users/Enqey De-Ben Rockson/Downloads/Purple Simple Warner & Spencer Blog Banner.png')
-st.image(img,use_column_width = True)
+st.image(img, use_column_width=True)
 
-
+# Display project rationale
 st.write("""
          This API recommends a list of movies for users to watch based on user input in the sidebar
-         
+
         ***Project Rationale*** : This is a proof of concept to illustrate how the algorithm works to recommend 
         items & content to clients on an e-commerce or online business platform   
-    
-""" )
+""")
 
+# Load dataset
 df = pd.read_csv('C:/Users/Enqey De-Ben Rockson/Downloads/IMDB-Movie-Data.csv')
 
+# Show available movies in dataframe
 st.subheader('***List of Movies in this catalogue***')
-
 st.dataframe(df)
 
-Shape = df.shape
+# Check if there are missing values in the selected columns
+cols = ['Actors', 'Director', 'Genre', 'Title']
+st.write("Are there any missing values?", df[cols].isnull().any().any())
 
-cols = ['Actors','Director','Genre','Title']
-
-df[cols].head(3)
-
-df[cols].isnull().values.any()
-
-
-#Filter = st.sidebar.multiselect(
-#        'Filter table',
-#        (df[cols].head())
-#    )
-
-#st.sidebar.write('See table with columns:', Filter)
-
-#st.dataframe(Filter)
-
-
+# Create 'important_features' column
 def get_important_features(data):
     important_features = []
-    for i in range(0,data.shape[0]):
-        important_features.append(data['Actors'][i]+' '+data['Director'][i]+' '+data['Genre'][i]+' '+data['Title'][i])
-        
+    for i in range(0, data.shape[0]):
+        important_features.append(data['Actors'][i] + ' ' + data['Director'][i] + ' ' + data['Genre'][i] + ' ' + data['Title'][i])
     return important_features
 
-df['important_features']= get_important_features(df)
+df['important_features'] = get_important_features(df)
 
-df.head(3)
-
+# Calculate cosine similarity
 cm = CountVectorizer().fit_transform(df['important_features'])
-
 cs = cosine_similarity(cm)
 
+# Movie recommendation section
 st.subheader('***Movie Recommendation***')
 
 option = st.sidebar.selectbox(
     'What movie do you want similar movies to?',    
-    (df.Title)
-    )
+    df['Title']
+)
 
-st.write('You have selected:' , option)
+st.write('You have selected:', option)
 
-#option = st.sidebar.text_input(
-#    'Insert title',    
- #   "The Amazing Spider-Man"
-  #  (df.Title)
-#    )
-
-#st.write('You have selected:' , option)
-
-
+# Get movie_id based on title
 title = option
+movie_id = df[df['Title'] == title].index[0]
 
-movie_id = df[df.Title == title]['Movie_id'].values[0]
-
+# Calculate similarity scores
 scores = list(enumerate(cs[movie_id]))
 
-sorted_scores = sorted(scores, key =lambda x: x[1], reverse = True)
+# Sort the scores and recommend movies
+sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
+sorted_scores = sorted_scores[1:]  # Exclude the movie itself
 
-sorted_score = sorted_scores[1:]
+st.write(f'The 7 recommended movies similar to "{title}" are:')
+for j, item in enumerate(sorted_scores[:7]):
+    movie_title = df.iloc[item[0]]['Title']
+    st.write(f"{j + 1}. {movie_title}")
 
-
-j = 0 
-st.write('The 7 recommended movies similar to', title, 'are:\n')
-for item in sorted_scores:
-    movie_title = df[df.Movie_id == item[0]]['Title'].values[0]
-    st.write(j+1,movie_title)
-    j = j+1
-    if j>6:
-        break
-
+# Footer
 st.write("""
-         
-         **Thanks for using this API, kinldy Share this with your friends & Family**
-         
-         ***Developed by*** : Nana Ekow Okusu 
-         
-         ***Find me on***: Linkedin + Twitter
-         
-         ***Get in touch***: nanaokusu@insytecore.com
-        """ )
+    **Thanks for using this API, kindly Share this with your friends & Family**
 
+    ***Developed by*** : Nana Ekow Okusu 
+    
+    ***Find me on***: Linkedin + Twitter
+    
+    ***Get in touch***: nanaokusu@insytecore.com
+""")
 
 
 
