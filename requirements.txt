@@ -1,6 +1,6 @@
-numpy==1.18.5
-streamlit==0.62.1
-sklearn==0.0
-scikit-learn== 0.23.1
-pandas== 1.0.5
-pillow== 7.2.0
+numpy
+streamlit
+sklearn
+scikit-learn
+pandas
+pillow
