@@ -25,7 +25,10 @@ st.write("""
 """)
 
 # Load dataset
-data_path = 'https://raw.githubusercontent.com/Enqey/mo.ai/blob/main/IMDB-Movie-Data.csv'
+#data_path = 'https://raw.githubusercontent.com/Enqey/mo.ai/blob/main/IMDB-Movie-Data.csv'
+
+data_path = 'https://raw.githubusercontent.com/Enqey/mo.ai/main/IMDB-Movie-Data.csv'
+
 try:
     df = pd.read_csv(data_path)
 except Exception as e:
