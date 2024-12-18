@@ -13,8 +13,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 
 # Load image
-img = Image.open('C:/Users/Enqey De-Ben Rockson/Downloads/Purple Simple Warner & Spencer Blog Banner.png')
-st.image(img, use_column_width=True)
+#img = Image.open('C:/Users/Enqey De-Ben Rockson/Downloads/Purple Simple Warner & Spencer Blog Banner.png')
+#st.image(img, use_column_width=True)
 
 # Display project rationale
 st.write("""
@@ -25,13 +25,12 @@ st.write("""
 """)
 
 # Load dataset
-data_path = 'https://raw.githubusercontent.com/Enqey/Diabetes_ml/main/diabetes.csv'
+data_path = 'https://raw.githubusercontent.com/Enqey/mo.ai/blob/main/IMDB-Movie-Data.csv'
 try:
     df = pd.read_csv(data_path)
 except Exception as e:
     st.error(f"Error loading dataset: {e}")
     st.stop()
-
 
 # Show available movies in dataframe
 st.subheader('***List of Movies in this catalogue***')
