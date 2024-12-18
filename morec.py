@@ -25,7 +25,13 @@ st.write("""
 """)
 
 # Load dataset
-df = pd.read_csv('C:/Users/Enqey De-Ben Rockson/Downloads/IMDB-Movie-Data.csv')
+data_path = 'https://raw.githubusercontent.com/Enqey/Diabetes_ml/main/diabetes.csv'
+try:
+    df = pd.read_csv(data_path)
+except Exception as e:
+    st.error(f"Error loading dataset: {e}")
+    st.stop()
+
 
 # Show available movies in dataframe
 st.subheader('***List of Movies in this catalogue***')
