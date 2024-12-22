@@ -1,109 +1,64 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Feb 28 08:03:25 2022
-
-@author: Enqey De-Ben Rockson
+Improved Movie Recommendation System
 """
 
 import pandas as pd
 import numpy as np
 import streamlit as st
-from PIL import Image
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import CountVectorizer
-
-# Load image
-#img = Image.open('C:/Users/Enqey De-Ben Rockson/Downloads/Purple Simple Warner & Spencer Blog Banner.png')
-#st.image(img, use_column_width=True)
-
-# Display project rationale
-st.write("""
-         This API recommends a list of movies for users to watch based on user input in the sidebar
-
-        ***Project Rationale*** : This is a proof of concept to illustrate how the algorithm works to recommend 
-        items & content to clients on an e-commerce or online business platform   
-""")
 
 # Load dataset
-data_path = 'https://raw.githubusercontent.com/Enqey/mo.ai/blob/main/IMDB-Movie-Data.csv'
+data_url = 'https://raw.githubusercontent.com/Enqey/mo.ai/main/IMDB-Movie-Data.csv'
 
-#data_path = 'https://raw.githubusercontent.com/Enqey/mo.ai/main/IMDB-Movie-Data.csv'
+st.title("🎥 Movie Recommendation System")
+st.write("""
+    **Find movies similar to your favorites!**  
+    Select a movie, and we'll recommend others you'll love.
+""")
 
 try:
-    df = pd.read_csv(data_path)
+    df = pd.read_csv(data_url)
+    st.success("Dataset loaded successfully!")
 except Exception as e:
     st.error(f"Error loading dataset: {e}")
     st.stop()
 
-# Show available movies in dataframe
-st.subheader('***List of Movies in this catalogue***')
-st.dataframe(df)
+# Check for missing values
+required_columns = ['Actors', 'Director', 'Genre', 'Title']
+missing_data = df[required_columns].isnull().any().any()
+if missing_data:
+    st.warning("Missing values detected. Filling with placeholder values...")
+    df.fillna('Unknown', inplace=True)
 
-# Check if there are missing values in the selected columns
-cols = ['Actors', 'Director', 'Genre', 'Title']
-st.write("Are there any missing values?", df[cols].isnull().any().any())
+# Feature engineering
+df['combined_features'] = df['Actors'] + ' ' + df['Director'] + ' ' + df['Genre']
 
-# Create 'important_features' column
-def get_important_features(data):
-    important_features = []
-    for i in range(0, data.shape[0]):
-        important_features.append(data['Actors'][i] + ' ' + data['Director'][i] + ' ' + data['Genre'][i] + ' ' + data['Title'][i])
-    return important_features
+# Vectorize features
+tfidf = TfidfVectorizer(stop_words='english')
+tfidf_matrix = tfidf.fit_transform(df['combined_features'])
 
-df['important_features'] = get_important_features(df)
+# Cosine similarity
+cosine_sim = cosine_similarity(tfidf_matrix)
 
-# Calculate cosine similarity
-cm = CountVectorizer().fit_transform(df['important_features'])
-cs = cosine_similarity(cm)
+# Sidebar movie selection
+movie_titles = df['Title'].tolist()
+selected_movie = st.sidebar.selectbox("Select a movie:", movie_titles)
 
-# Movie recommendation section
-st.subheader('***Movie Recommendation***')
-
-option = st.sidebar.selectbox(
-    'What movie do you want similar movies to?',    
-    df['Title']
-)
-
-st.write('You have selected:', option)
-
-# Get movie_id based on title
-title = option
-movie_id = df[df['Title'] == title].index[0]
-
-# Calculate similarity scores
-scores = list(enumerate(cs[movie_id]))
-
-# Sort the scores and recommend movies
-sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
-sorted_scores = sorted_scores[1:]  # Exclude the movie itself
-
-st.write(f'The 7 recommended movies similar to "{title}" are:')
-for j, item in enumerate(sorted_scores[:7]):
-    movie_title = df.iloc[item[0]]['Title']
-    st.write(f"{j + 1}. {movie_title}")
-
-# Footer
-st.write("""
-    **Thanks for using this API, kindly Share this with your friends & Family**
-
-    ***Developed by*** : Nana Ekow Okusu 
+if selected_movie:
+    st.subheader(f"Movies similar to: {selected_movie}")
     
-    ***Find me on***: Linkedin + Twitter
+    # Get index of the selected movie
+    movie_idx = df[df['Title'] == selected_movie].index[0]
     
-    ***Get in touch***: nanaokusu@insytecore.com
-""")
+    # Compute similarity scores
+    sim_scores = list(enumerate(cosine_sim[movie_idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)[1:8]  # Top 7
+    
+    # Display recommendations
+    for idx, (movie_index, score) in enumerate(sim_scores):
+        st.write(f"{idx + 1}. {df.iloc[movie_index]['Title']}")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+st.write("---")
+st.write("**Developed by Nana Ekow Okusu**")
